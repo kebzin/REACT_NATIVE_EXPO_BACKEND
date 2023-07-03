@@ -12,8 +12,14 @@ and adding the user to the database.
 */
 const registerUser = async (req, res) => {
   const content = req.body;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   try {
+    // Check if the email address is valid
+    if (!emailRegex.test(content.email)) {
+      return res.status(400).json({ message: "Invalid email address" });
+    }
+
     // checking if the user exist befor adding
     const existingUser = await users
       .findOne({ email: content.email })

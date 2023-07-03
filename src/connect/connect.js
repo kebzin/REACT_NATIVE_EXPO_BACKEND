@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const dotenv = require("dotenv");
+
 // const URI =
 //   "mongodb+srv://kebba:Howareyoudoing1@cluster0.odehr6g.mongodb.net/?retryWrites=true&w=majority"; // link to my database at atlass
 const connect = () => {

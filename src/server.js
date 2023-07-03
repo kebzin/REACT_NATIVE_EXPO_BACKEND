@@ -2,13 +2,11 @@ const express = require("express");
 const connect = require("./connect/connect");
 const app = express();
 const Register = require("./routers/Authentication");
-
+const dotenv = require("dotenv").config();
 const { Logger, LogEvent } = require("./middleware/logger");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
-const dotenv = require("dotenv").config();
 const corssOption = require("./config/corsOption");
-const { default: mongoose } = require("mongoose");
 
 // middleware
 app.use(Logger);
