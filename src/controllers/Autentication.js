@@ -40,7 +40,7 @@ const registerUser = async (req, res) => {
     const newUser = await users.create({});
     await newUser.save();
     res.status(201).json({
-      message: `User "${newUser.email}" created. This email address will serve as your new user ID and cannot be changed later.`,
+      message: `User "${newUser.Email}" created. This email address will serve as your new user ID and cannot be changed later.`,
     });
   } catch (error) {
     // if the user dident adde succesfully
