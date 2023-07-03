@@ -3,9 +3,8 @@ const bcrypt = require("bcrypt");
 const users = require("../models/Users");
 const Setting = require("../models/Settings");
 const ProfileImage = require("../models/Profile");
-const ProfileImage = require("../models/Profile");
-/**
 
+/**
 Registers a new user by checking if the user already exists, hashing the password,
 and adding the user to the database.
 @param {Object} req - The request object containing user data in the body.
@@ -13,10 +12,14 @@ and adding the user to the database.
 @param {Function} next - The next function to pass control to the next middleware.
 @returns {Promise} - A promise that resolves to a JSON response or passes control to the error-handling middleware.
 */
+
 const registerUser = async (req, res) => {
   const content = req.body;
+<<<<<<< HEAD
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+=======
+>>>>>>> 0d966af6c4bff956b9e09d3365495393b0be5fa1
   // A transaction ensures that either all operations within it are successfully completed, or none of them are applied.
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -69,6 +72,7 @@ const registerUser = async (req, res) => {
         currency: content.currency,
         location: content.location,
       },
+
       { session }
     );
 
@@ -123,7 +127,10 @@ const login = async (req, res) => {
 
   try {
     // Find the user by email
-    const user = await users.findOne({ email }).exec();
+    const user = await users
+      .findOne({ email })
+      .populate("ProfileImage usersSetting")
+      .exec();
 
     // Check if the user exists
     if (!user) {

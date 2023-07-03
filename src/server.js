@@ -6,7 +6,13 @@ const dotenv = require("dotenv").config();
 const { Logger, LogEvent } = require("./middleware/logger");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
+<<<<<<< HEAD
 const corssOption = require("./config/corsOption");
+=======
+require("dotenv").config();
+const corssOption = require("./config/corsOption");
+const user = require("./routers/users");
+>>>>>>> 0d966af6c4bff956b9e09d3365495393b0be5fa1
 
 // middleware
 app.use(Logger);
@@ -20,7 +26,7 @@ app.use(express.urlencoded({ extended: true }));
 // app.use("/api/price", Price);
 app.use("/api/auth", Register);
 // app.use("/api/fine", Fine);
-// app.use("/api/officers", officers);
+app.use("/api/user", user);
 // app.use("/api/driver", Driver);
 // app.use("/api/message", Message);
 
