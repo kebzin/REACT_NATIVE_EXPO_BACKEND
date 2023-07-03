@@ -6,9 +6,9 @@ const Register = require("./routers/Authentication");
 const { Logger, LogEvent } = require("./middleware/logger");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
-const dotenv = require("dotenv").config();
+require("dotenv").config();
 const corssOption = require("./config/corsOption");
-const { default: mongoose } = require("mongoose");
+const user = require("./routers/users");
 
 // middleware
 app.use(Logger);
@@ -22,7 +22,7 @@ app.use(express.urlencoded({ extended: true }));
 // app.use("/api/price", Price);
 app.use("/api/auth", Register);
 // app.use("/api/fine", Fine);
-// app.use("/api/officers", officers);
+app.use("/api/user", user);
 // app.use("/api/driver", Driver);
 // app.use("/api/message", Message);
 
