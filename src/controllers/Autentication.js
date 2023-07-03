@@ -1,6 +1,9 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const users = require("../models/Users");
+const Setting = require("../models/Settings");
+const ProfileImage = require("../models/Profile");
+const ProfileImage = require("../models/Profile");
 /**
 
 Registers a new user by checking if the user already exists, hashing the password,
@@ -14,13 +17,21 @@ const registerUser = async (req, res) => {
   const content = req.body;
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+  // A transaction ensures that either all operations within it are successfully completed, or none of them are applied.
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
+<<<<<<< HEAD
     // Check if the email address is valid
     if (!emailRegex.test(content.email)) {
       return res.status(400).json({ message: "Invalid email address" });
     }
 
     // checking if the user exist befor adding
+=======
+    // Checking if the user already exists...
+>>>>>>> c49414b12197a78a00c699fcbbaafc561ccb90db
     const existingUser = await users
       .findOne({ email: content.email })
       .lean()
@@ -28,24 +39,72 @@ const registerUser = async (req, res) => {
     if (existingUser) {
       return res.status(409).json({
         message: `Your user ID could not be created because ${content.email} is already taken. Please choose a new one.`,
-      }); // Conflict with existing user
-    } // conflict with existing
+      });
+    }
 
     // Hash the password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(content.password, salt);
     console.log("Hashed password:", hashedPassword);
 
-    // Add the user to the database
-    const newUser = await users.create({});
-    await newUser.save();
+    // Add the user to the database within the transaction session
+    const newUser = await users.create(
+      {
+        firstName: content.firstName,
+        lastName: content.lastName,
+        // Add other user details...
+      },
+      { session }
+    );
+
+    // Adding the user setting table during user creation within the same session
+    const userSetting = await Setting.create(
+      {
+        userId: newUser._id,
+        pushNotification: content.pushNotification,
+        receivedMessages: content.receivedMessages,
+        emailNotifications: content.emailNotifications,
+        rentalAvailability: content.rentalAvailability,
+        exchangeAvailability: content.exchangeAvailability,
+        currency: content.currency,
+        location: content.location,
+      },
+      { session }
+    );
+
+    // Adding the user profile image table during user creation within the same session
+    const profileImage = await ProfileImage.create(
+      {
+        image_url: content.image_url,
+        userId: newUser._id,
+      },
+      { session }
+    );
+
+    // Assign the userSetting and profileImage IDs to the newUser
+    newUser.usersSetting = userSetting._id;
+    newUser.profileImage = profileImage._id;
+    await newUser.save({ session });
+
+    // Commit the transaction
+    await session.commitTransaction();
+    session.endSession();
+
     res.status(201).json({
       message: `User "${newUser.Email}" created. This email address will serve as your new user ID and cannot be changed later.`,
     });
   } catch (error) {
-    // if the user dident adde succesfully
+    // Rollback the transaction if an error occurs
+    await session.abortTransaction();
+    session.endSession();
     console.log(error);
-    return res.status(500).json({ message: error.message });
+    if (error.message) {
+      return res.status(500).json({ message: error.message });
+    } else {
+      return res
+        .status(500)
+        .json({ message: "An error occurred during user registration." });
+    }
   }
 };
 

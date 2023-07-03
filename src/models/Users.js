@@ -16,6 +16,8 @@ const usersSchema = new mongoose.Schema(
     usersSetting: { type: mongoose.Schema.Types.ObjectId, ref: "setting" },
     socialMediaAccounts: [{ type: String }, { type: String }],
     profileImage: { type: mongoose.Schema.Types.ObjectId, ref: "profileImage" },
+    verificationToken: { type: String },
+    verified: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
