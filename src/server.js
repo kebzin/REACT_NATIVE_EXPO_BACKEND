@@ -2,13 +2,17 @@ const express = require("express");
 const connect = require("./connect/connect");
 const app = express();
 const Register = require("./routers/Authentication");
-
+const dotenv = require("dotenv").config();
 const { Logger, LogEvent } = require("./middleware/logger");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
+<<<<<<< HEAD
+const corssOption = require("./config/corsOption");
+=======
 require("dotenv").config();
 const corssOption = require("./config/corsOption");
 const user = require("./routers/users");
+>>>>>>> 0d966af6c4bff956b9e09d3365495393b0be5fa1
 
 // middleware
 app.use(Logger);

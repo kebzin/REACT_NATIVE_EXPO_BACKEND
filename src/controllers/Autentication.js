@@ -15,12 +15,26 @@ and adding the user to the database.
 
 const registerUser = async (req, res) => {
   const content = req.body;
+<<<<<<< HEAD
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+=======
+>>>>>>> 0d966af6c4bff956b9e09d3365495393b0be5fa1
   // A transaction ensures that either all operations within it are successfully completed, or none of them are applied.
   const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
+<<<<<<< HEAD
+    // Check if the email address is valid
+    if (!emailRegex.test(content.email)) {
+      return res.status(400).json({ message: "Invalid email address" });
+    }
+
+    // checking if the user exist befor adding
+=======
     // Checking if the user already exists...
+>>>>>>> c49414b12197a78a00c699fcbbaafc561ccb90db
     const existingUser = await users
       .findOne({ email: content.email })
       .lean()
@@ -81,7 +95,7 @@ const registerUser = async (req, res) => {
     session.endSession();
 
     res.status(201).json({
-      message: `User "${newUser.email}" created. This email address will serve as your new user ID and cannot be changed later.`,
+      message: `User "${newUser.Email}" created. This email address will serve as your new user ID and cannot be changed later.`,
     });
   } catch (error) {
     // Rollback the transaction if an error occurs
