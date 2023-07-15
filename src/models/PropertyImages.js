@@ -3,7 +3,13 @@ const mongoose = require("mongoose");
 // Define the Property Image schema
 const PropertyImageSchema = new mongoose.Schema(
   {
-    image_urls: [{ type: String }], // Array of image URLs associated with the property
+    userId: {
+      type: mongoose.Types.ObjectId,
+      required: true,
+      ref: "users",
+      require: true,
+    },
+    image_url: [{ type: String, default: "", require: true }], // Array of image URLs associated with the property
   },
   { timestamps: true }
 );

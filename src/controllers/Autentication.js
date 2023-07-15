@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const users = require("../models/Users");
 const Setting = require("../models/Settings");
 const ProfileImage = require("../models/Profile");
+const { default: mongoose } = require("mongoose");
 
 /**
 Registers a new user by checking if the user already exists, hashing the password,
@@ -15,79 +16,71 @@ and adding the user to the database.
 
 const registerUser = async (req, res) => {
   const content = req.body;
-<<<<<<< HEAD
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-=======
->>>>>>> 0d966af6c4bff956b9e09d3365495393b0be5fa1
   // A transaction ensures that either all operations within it are successfully completed, or none of them are applied.
   const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
-<<<<<<< HEAD
-    // Check if the email address is valid
-    if (!emailRegex.test(content.email)) {
-      return res.status(400).json({ message: "Invalid email address" });
-    }
-
-    // checking if the user exist befor adding
-=======
     // Checking if the user already exists...
->>>>>>> c49414b12197a78a00c699fcbbaafc561ccb90db
     const existingUser = await users
-      .findOne({ email: content.email })
+      .findOne({ Email: content.Email })
       .lean()
       .exec();
     if (existingUser) {
       return res.status(409).json({
-        message: `Your user ID could not be created because ${content.email} is already taken. Please choose a new one.`,
+        message: `Your user ID could not be created because ${content.Email} is already taken. Please choose a new one.`,
       });
     }
 
     // Hash the password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(content.password, salt);
-    console.log("Hashed password:", hashedPassword);
 
     // Add the user to the database within the transaction session
-    const newUser = await users.create(
-      {
-        firstName: content.firstName,
-        lastName: content.lastName,
-        // Add other user details...
-      },
+    const [newUser] = await users.create(
+      [
+        {
+          ...content,
+          password: hashedPassword,
+        },
+      ],
       { session }
     );
 
     // Adding the user setting table during user creation within the same session
-    const userSetting = await Setting.create(
-      {
-        userId: newUser._id,
-        pushNotification: content.pushNotification,
-        receivedMessages: content.receivedMessages,
-        emailNotifications: content.emailNotifications,
-        rentalAvailability: content.rentalAvailability,
-        exchangeAvailability: content.exchangeAvailability,
-        currency: content.currency,
-        location: content.location,
-      },
+    const userID = newUser?._id.toString();
+    console.log("userid", userID);
 
+    const [userSetting] = await Setting.create(
+      [
+        {
+          userId: userID,
+          pushNotification: content.pushNotification,
+          receivedMessages: content.receivedMessages,
+          emailNotifications: content.emailNotifications,
+          rentalAvailability: content.rentalAvailability,
+          exchangeAvailability: content.exchangeAvailability,
+          currency: content.currency,
+          location: content.location,
+        },
+      ],
       { session }
     );
 
     // Adding the user profile image table during user creation within the same session
-    const profileImage = await ProfileImage.create(
-      {
-        image_url: content.image_url,
-        userId: newUser._id,
-      },
+    const [profileImage] = await ProfileImage.create(
+      [
+        {
+          ...content,
+          userId: userID,
+        },
+      ],
       { session }
     );
 
     // Assign the userSetting and profileImage IDs to the newUser
-    newUser.usersSetting = userSetting._id;
-    newUser.profileImage = profileImage._id;
+    newUser.usersSetting = userSetting?._id.toString();
+    newUser.profileImageId = profileImage._id.toString();
     await newUser.save({ session });
 
     // Commit the transaction
@@ -102,12 +95,32 @@ const registerUser = async (req, res) => {
     await session.abortTransaction();
     session.endSession();
     console.log(error);
-    if (error.message) {
-      return res.status(500).json({ message: error.message });
-    } else {
+    console.log(error.message);
+
+    if (error instanceof mongoose.Error.ValidationError) {
+      // Handle validation errors
       return res
-        .status(500)
-        .json({ message: "An error occurred during user registration." });
+        .status(400)
+        .json({ message: "Validation error", error: error.message });
+    } else if (error instanceof mongoose.Error.CastError) {
+      // Handle cast errors (e.g., invalid ObjectId)
+      return res
+        .status(400)
+        .json({ message: "Invalid ID", error: error.message });
+    } else if (error instanceof mongoose.Error.DuplicateKeyError) {
+      // Handle duplicate key errors
+      return res
+        .status(409)
+        .json({ message: "Duplicate key error", error: error.message });
+    } else {
+      // Handle other errors
+      if (error.message) {
+        return res.status(500).json({ message: error.message });
+      } else {
+        return res
+          .status(500)
+          .json({ message: "An error occurred during user registration." });
+      }
     }
   }
 };
@@ -123,13 +136,13 @@ const registerUser = async (req, res) => {
  * @returns {Promise} - A promise that resolves to a JSON response or passes control to the error-handling middleware.
  */
 const login = async (req, res) => {
-  const { email, password } = req.body;
+  const { Email, Password } = req.body;
 
   try {
     // Find the user by email
     const user = await users
-      .findOne({ email })
-      .populate("ProfileImage usersSetting")
+      .findOne({ Email })
+      .populate("profileImageId usersSetting")
       .exec();
 
     // Check if the user exists
@@ -138,13 +151,13 @@ const login = async (req, res) => {
     }
 
     // Verify the password
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await bcrypt.compare(Password, user.password);
     if (!isMatch) {
       return res.status(401).json({ message: "Invalid email or password." });
     }
 
     // Check if the user's account is active
-    if (!user.active) {
+    if (!user.accountStatus) {
       return res.status(401).json({
         message: "Your account is inactive. Please contact the administrator.",
       });

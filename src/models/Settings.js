@@ -4,13 +4,13 @@ const mongoose = require("mongoose");
 const settingSchema = new mongoose.Schema(
   {
     userId: { type: mongoose.Types.ObjectId, required: true, ref: "users" },
-    pushNotification: { type: Boolean, default: false },
-    receivedMessages: { type: Number, default: true },
-    emailNotifications: { type: Boolean, default: true }, // Enable or disable email notifications
-    rentalAvailability: { type: Boolean, default: true }, // Enable or disable rental availability
-    exchangeAvailability: { type: Boolean, default: false }, // Enable or disable item exchange availability
-    currency: { type: String, default: "GMD" }, // Default currency for pricing and transactions
-    location: { type: String, default: "Global" }, // Default location for search and user preferences
+    pushNotification: { type: Boolean, default: false, required: true },
+    receivedMessages: { type: Number, default: true, required: true },
+    emailNotifications: { type: Boolean, default: true, required: true }, // Enable or disable email notifications
+    rentalAvailability: { type: Boolean, default: true, required: true }, // Enable or disable rental availability
+    exchangeAvailability: { type: Boolean, default: false, required: true }, // Enable or disable item exchange availability
+    currency: { type: String, default: "GMD", required: true }, // Default currency for pricing and transactions
+    location: { type: String, default: "Global", required: true }, // Default location for search and user preferences
   },
   { timestamps: true }
 );

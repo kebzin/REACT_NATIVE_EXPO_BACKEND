@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 // Define the Profile Image schema
 const profileImageSchema = new mongoose.Schema({
-  image_url: { type: String, required: true }, // Add validation for non-empty image URL
+  image_url: [{ type: String, default: "" }], // Add validation for non-empty image URL
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }, // Add required validation for userId
 });
 
