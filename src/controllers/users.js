@@ -25,9 +25,6 @@ const getUserDetails = async (req, res) => {
     if (!User) {
       return res.status(404).json({ message: "User not found" });
     }
-
-    // Format the response
-
     // Send the formatted response
     res.json(User);
   } catch (error) {
@@ -45,29 +42,18 @@ const getUserDetails = async (req, res) => {
  * @returns {Promise<void>}
  */
 const updateUser = async (req, res) => {
+  const updates = req.body;
+  const userId = req.params.userId; // Extract the user ID from the request parameters
   try {
-    // Extract the user ID from the request parameters
-    const userId = req.params.userId;
-
-    // Retrieve the updates from the request body
-    const updates = req.body;
-
     // Check if the user exists
     const User = await user.findById(userId).exec();
-
-    // If user doesn't exist, return an error response
     if (!User) {
+      // If user doesn't exist, return an error response
       return res.status(404).json({ message: "User not found" });
     }
-
-    // Update the user fields using spread operator
-    user.set({ ...updates });
-
-    // Save the updated user to the database
-    const updatedUser = await user.save();
-
-    // Send the updated user object in the response
-    res.json({ message: "User data has been updated succesfully" });
+    user.set({ ...updates }); // Update the user fields using spread operator
+    const updatedUser = await user.save(); // Save the updated user to the database
+    res.json({ message: "Your data has been updated succesfully" });
   } catch (error) {
     // Handle any errors that occur during the update process
     console.log(error);
@@ -154,4 +140,6 @@ const deleteUser = async (req, res) => {
 
 module.exports = {
   deleteUser,
+  getUserDetails,
+  updateUser,
 };
